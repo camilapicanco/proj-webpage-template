@@ -1,7 +1,516 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Project 2 here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    background-color: white;
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+  kbd {
+    color: #121212;
+  }
+</style>
+<title>CS 184 Mesh Edit</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']]
+    }
+  };
+</script>
+<script id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+
+</head>
+
+
+<body>
+
+<h1 align="middle">CS 184: Computer Graphics and Imaging</h1>
+<h1 align="middle">Project 2: Mesh Edit</h1>
+<h2 align="middle">Camila Picanco Mesquita & Rishi Arjun</h2>
+
+<br>
+
+<div>
+
+<h2 align="middle">Overview</h2>
+<p>
+  This project involved working with geometric modeling by implementing Bezier Curves 
+  with 1D de Castelijau subdivision, implementing Bezier Surfaces with separable 1D de 
+  Casteljau and manipulating triangle meshes and half-edges using edge flip, edge split 
+  and loop subdivision.
+</p>
+<br>
+
+
+<h2 align="middle">Section I: Bezier Curves and Surfaces</h2>
+
+<h3 align="middle">Part 1: Bezier Curves with 1D de Casteljau Subdivision</h3>
+
+
+<p>
+  The first task of this project was to implement Bezier Curves with 1D de Casteljau subdivision.
+</p>
+<p>De Casteljau’s algorithm is a recursive algorithm that helps evaluate Bezier curves, which are 
+  parametric polynomial curves commonly used in graphics. </p>
+<p>In the project, we implemented this algorithm starting with the 1D case through the method 
+  BezierCurve::evaluateStep. We started our implementation with a set of n points and computed a 
+  new set of n-1 points, using linear interpolation, or LERP for short. Our main calculation step 
+  was the formula lerp(p(i), p(i+1), t) = (1 - t) * p(i) + (t * p(i+1)), where t represents a 
+  scalar parameter given to us. Our algorithm recurssively applied the above step until there was 
+  only one point left. </p>
+
+<p>
+  We’ve created our own Bezier curve with 6 control points (my_bezier_curve.bzc). 
+</p>
+<p>Here are screenshots of the original control points and the Bezier Curve:</p>
+<table style="width:100%">
+  <tr align="center">
+    <td>
+      <img src="images/six_points.png" align="middle" width="400px"/>
+      <figcaption>Original Six Points</figcaption>
+    </td>
+    <td>
+      <img src="images/curve_with_original_points.png" align="middle" width="400px"/>
+      <figcaption>Bezier Curve with Original Six Points</figcaption>
+    </td>
+  </tr>
+  <br>
+</table>
+<br>
+<p>Here are screenshots of each level of the evaluation from level 0 to the 
+  final evaluated point:</p>
+<!-- Example of including multiple figures -->
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="images/level0_five_points.png" align="middle" width="400px"/>
+        <figcaption>Level 0</figcaption>
+      </td>
+      <td>
+        <img src="images/level1_four_points.png" align="middle" width="400px"/>
+        <figcaption>Level 1</figcaption>
+      </td>
+    </tr>
+    <br>
+    <tr align="center">
+      <td>
+        <img src="images/level2_three_points.png" align="middle" width="400px"/>
+        <figcaption>Level 2</figcaption>
+      </td>
+      <td>
+        <img src="images/level3_two_points.png" align="middle" width="400px"/>
+        <figcaption>Level 3</figcaption>
+      </td>
+    </tr>
+    <br>
+    <tr align="center">
+      <td>
+        <img src="images/level4_one_point.png" align="middle" width="400px"/>
+        <figcaption>Level 4</figcaption>
+      </td>
+      <td>
+        <img src="images/curve_with_points.png" align="middle" width="400px"/>
+        <figcaption>Bezier Curve with all points</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+<br>
+
+<p>
+  Here is a screenshot of the above Bezier curve modified by the original control 
+  points and t parameters through the mouse:
+</p>  
+
+<div align="middle">
+  <img src="images/modified_bezier_curve.png" align="center" width="400px"/>
+  <figcaption>Modified Bezier Curve</figcaption>
+</div>
+<br>
+
+
+<h3 align="middle">Part 2: Bezier Surfaces with Separable 1D de Casteljau</h3>
+<p>
+  For this section, we will adapt our Bezier curves to Bezier surfaces. This can be 
+  done quite easily by extending the De Casteljau’s algorithm. The main difference is 
+  that our parametric equation is based on u & v, not just t.
+</p>
+<p>For the evaluateStep method of the Bezier patch, we used the exact same recursive 
+  function as the 1D case. In the evaluate1D method, wetask wrote a recursive function 
+  that uses evaluateStep to fully evaluate De Casteljau’s algorithm for a complete set of 
+  points with the t parameter. From there, we can use this function to fully evaluate the 
+  entire Bezier patch using both the u & v parameter. We first perform the 1D method on 
+  the u parameter and then use the result to evaluate the v parameter.</p>
+<p>Here is a screenshot of bez/teapot.bez evaluated by our implementation.</p>
+<br>
+
+<div align="middle">
+  <img src="images/task2.png" align="center" width="400px"/>
+  <figcaption>Modified Bezier Curve</figcaption>
+</div>
+<br>
+
+
+<h2 align="middle">Section II: Triangle Meshes and Half-Edge Data Structure</h2>
+
+<h3 align="middle">Part 3: Area-Weighted Vertex Normals</h3>
+
+<p>
+  For this section, we implemented Phong Shading by calculating the area-weighted normal 
+  vectors at the vertices.
+</p>
+<p>To implement the area-weighted vertex normals, we first looped over all the main pointers 
+  in the halfedges to traverse all the faces that shared a vertex. Then, for each face, we 
+  took 2 edge vectors and used the corresponding cross-product to get the normal vector for 
+  that particular face. </p>
+  <p>Here are screenshots of dae/teapot.dae comparing teapot shading with and without vertex 
+    normals:</p>
+<br>
+<table style="width:100%">
+  <tr align="center">
+    <td>
+      <img src="images/flat.png" align="middle" width="400px"/>
+      <figcaption>Shading without vertex normals</figcaption>
+    </td>
+    <td>
+      <img src="images/phong.png" align="middle" width="400px"/>
+      <figcaption>Shading with vertex normals</figcaption>
+    </td>
+  </tr>
+  <br>
+</table>
+<br>
+
+<h3 align="middle">Part 4: Edge Flip</h3>
+<p>
+  For this section, we implemented edge flip, which is a local remeshing operation on an edge.
+  </p>
+  <p>We used <a href="http://15462.courses.cs.cmu.edu/fall2015content/misc/HalfedgeEdgeOpImplementationGuide.pdf">this</a>
+source for this section.</p>
+<p>We started by drawing a diagram for all the edges, vertex, halfedges, and faces that could 
+  be connected to the edge I would like to flip. Here is a before and after picture for the edge flip:
+
+</p>
+<table style="width:100%">
+  <tr align="center">
+    <td>
+      <img src="images/drawing_before_flip.png" align="middle" width="400px"/>
+      <figcaption align="middle">Source:<a href="http://15462.courses.cs.cmu.edu/fall2015content/misc/HalfedgeEdgeOpImplementationGuide.pdf">here</a></figcaption>
+    </td>
+    <td>
+      <img src="images/drawing_after_flip.png" align="middle" width="400px"/>
+      <figcaption align="middle">Source:<a href="http://15462.courses.cs.cmu.edu/fall2015content/misc/HalfedgeEdgeOpImplementationGuide.pdf">here</a></figcaption>
+    </td>
+  </tr>
+  <br>
+</table>
+<p> Next, we checked if the edge passed the boundary check. If the edge was not an boundary edge, we 
+  created HalfedgeIters, VertexIters, EdgeIters and FaceIters for all the pointers in the before 
+  flip image. Then, we reassigned all the HalfedgeIters, VertexIters, EdgeIters and FaceIters 
+  pointers to match the after flip drawing. 
+</p>
+<p>
+    Here are screenshots of the teapot before and after some edge flips:
+</p>
+<table style="width:100%">
+  <tr align="center">
+    <td>
+      <img src="images/before_flip.png" align="middle" width="400px"/>
+      <figcaption>Teapot Before Edge Flip</figcaption>
+    </td>
+    <td>
+      <img src="images/after_flip.png" align="middle" width="400px"/>
+      <figcaption>Teapot After Edge Flips</figcaption>
+    </td>
+  </tr>
+  <br>
+  <tr align="center">
+    <td>
+      <img src="images/flip_img_turned.png" align="middle" width="400px"/>
+      <figcaption>Teapot at a Different Angle</figcaption>
+    </td>
+    <td>
+      <img src="images/flip_img_turned_blw.png" align="middle" width="400px"/>
+      <figcaption>Teapot at a Different Angle Black & White</figcaption>
+    </td>
+  </tr>
+  <br>
+</table>
+<br>
+<p>
+Finally, the first time we wrote the code for this section, we 
+  only updated the pointers for the HalfedgeIters, VertexIters, EdgeIters and FaceIters that we 
+  were sure would be modified (aka. h0, h3, e0, f0, f1). This resulted in the following image:
+</p>
+<br>
+<div align="middle">
+  <img src="images/wrong_task4.png" align="center" width="400px"/>
+  <figcaption>Teapot with missing pointers updates</figcaption>
+</div>
+<br>
+<p>By looking at the picture, we realized that there were pointers missing being updated.
+  Once we updated all of the pointers, our implementation worked correctly.
+</p>
+
+
+<h3 align="middle">Part 5: Edge Split</h3>
+<p>
+  For this section, we implemented split, which is also a local remeshing operation on an edge
+   but a little different than flip. 
+</p>
+<p>We started by drawing a diagram for all the edges, vertex, halfedges, and faces that could be 
+  connected to the edge we would like to split. </p>
+  <p>For the before drawing, we used the same as the one for edge flip but for the after drawing 
+    we made a new one. Here is a before and after drawings for the edge flip:</p>
+    <table style="width:100%">
+      <tr align="center">
+        <td>
+          <img src="images/drawing_before_flip.png" align="middle" width="400px"/>
+          <figcaption align="middle">Source:<a href="http://15462.courses.cs.cmu.edu/fall2015content/misc/HalfedgeEdgeOpImplementationGuide.pdf">here</a></figcaption>
+        </td>
+        <td>
+          <img src="images/drawing_correct_twins.png" align="middle" width="400px"/>
+          <figcaption>After Split Drawing</figcaption>
+        </td>
+      </tr>
+      <br>
+    </table>
+<p>Next, we checked if the edge passed the boundary check. If the edge was not an boundary edge, 
+  we created HalfedgeIters, VertexIters, EdgeIters and FaceIters for all the pointers in the 
+  before flip image. Then, we allocated new elements for all the 6 new HalfedgeIters, 1 new 
+  VertexIter, 3 new EdgeIters and 2 new FaceIters that would be created once we splitted the 
+  edge. </p>
+<p>Once all new elements were allocated, we assigned the new VertexIter by calculating the average 
+  sum of the position of the 4 existing vertices. Then, we reassigned all the HalfedgeIters, 
+  VertexIters, EdgeIters and FaceIters pointers to match the after flip drawing.</p>
+  <p>Here are screenshots of the teapot before and after some edge splits:</p>
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="images/before_flip.png" align="middle" width="400px"/>
+        <figcaption>Teapot Before Edge Split</figcaption>
+      </td>
+      <td>
+        <img src="images/after_flip.png" align="middle" width="400px"/>
+        <figcaption>Teapot After Edge Splits</figcaption>
+      </td>
+    </tr>
+    <br>
+  </table>
+  <br>
+  <p>Here are screenshots of the teapot before and after some edge flips and splits:
+  </p>
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="images/before_flip.png" align="middle" width="400px"/>
+        <figcaption>Teapot Before Edge Split</figcaption>
+      </td>
+      <td>
+        <img src="images/split_flips.png" align="middle" width="400px"/>
+        <figcaption>Teapot After Edge Flips and Splits</figcaption>
+      </td>
+    </tr>
+    <br>
+  </table>
+  <br>
+  <p>Finally, for this section, we did not expect to have any bugs since it was very similar 
+    to the flip implementation. However, when we were done with our implementation we noticed 
+    that some of the edges were connecting to the wrong vertices. Here is what the teapot looked 
+    like:</p>
+    <div align="middle">
+      <img src="images/task5_error.png" align="center" width="400px"/>
+      <figcaption>Incorrect Split</figcaption>
+    </div>
+    <p>As we used the keys N and T to see where the next edge and the twin halfedge would be 
+      located. We realize our bug was happening in the twin edges. We then changed our code so 
+      that the twin halfedges h6, h7, h8, and h9 would not change at all to match our drawing.
+       We then noticed that the gap was gone but the edges were still missing.</p>
+       <div align="middle">
+        <img src="images/missing_edges.png" align="center" width="400px"/>
+        <figcaption>Missing Edges After Split</figcaption>
+      </div> 
+    <p>We then started to check each assignment and realized that when we made our drawing. 
+      We flipped the positions for h7 and h9 in our drawing from the before drawing.</p>
+      <table style="width:100%">
+        <tr align="center">
+          <td>
+            <img src="images/drawing_before_flip.png" align="middle" width="400px"/>
+            <figcaption align="middle">Source:<a href="http://15462.courses.cs.cmu.edu/fall2015content/misc/HalfedgeEdgeOpImplementationGuide.pdf">here</a></figcaption>
+          </td>
+          <td>
+            <img src="images/drawing_incorrect_twins.png" align="middle" width="400px"/>
+            <figcaption>After Split Incorrect Drawing</figcaption>
+          </td>
+        </tr>
+        <br>
+      </table>
+      <p>Once that was fixed, our implementation worked correctly.
+      </p>
+
+
+
+
+<h3 align="middle">Part 6: Loop Subdivision for Mesh Upsampling</h3>
+<p>
+  For the upsampling function, we used the previously implemented mesh operations alongside the 
+  pseudocode given to us in the code comments to perform loop subdivisions. Our first step was to  
+  set the isNew fields to false for all the vertices in the mesh, as well as updating the new 
+  vertex positions to (1- n*u) * original_position + u*original_neighbor_position_sum, where 
+  n=vertex degree and u=3/16 if n=3, ⅜*n otherwise. On the second step, we computed the updated 
+  vertex positions associated with edges by looping through all the edges in the mesh, setting 
+  isNew to false and saving the new vertex position on the edge newPosition by calculating 
+  ⅜ *(A+B) + ⅛ * (C+D), where A and B are vertices of the shared edge between two triangles 
+  and C and D are the vertices at the top of each triangle. Our third step was to split every e
+  dge in the mesh, we did not split any new edges or edges with that contain new vertices. 
+  For the edges we split, we updated isNew condition on the newly created edges and vertex on 
+  the splitEdge function. This step caused a lot of errors, we were unsure how to best set the if
+   conditions to prevent infinity loop and to prevent splits on newly created splits. On the 
+   fourth step, we then flipped any of the new edges connected by and old and new vertex by 
+   checking if the isNew condition was different between the two vertices and by making sure 
+   that it was a new edge. This was a similar structure to the previous step, so we also had 
+   similar issues with the isNew parameter, and how to go about it. In the final step, we just
+    updated all the new vertex positions by copying over the new positions into the vertex::position 
+    and updating the isNew to false.
+</p>
+<br>
+<p>Here are some images from our loop subdivision:
+</p>
+<table style="width:100%">
+  <tr align="center">
+    <td>
+      <img src="images/torus.png" align="middle" width="400px"/>
+      <figcaption>Torus Original Image</figcaption>
+    </td>
+    <td>
+      <img src="images/torus_l1.png" align="middle" width="400px"/>
+      <figcaption>Torus After 1 Loop Subivision</figcaption>
+    </td>
+  </tr>
+  <br>
+  <tr align="center">
+    <td>
+      <img src="images/torus_l2.png" align="middle" width="400px"/>
+      <figcaption>Torus After 2 Loop Subivision</figcaption>
+    </td>
+    <td>
+      <img src="images/torus_l3.png" align="middle" width="400px"/>
+      <figcaption>Torus After 3 Loop Subivision</figcaption>
+    </td>
+  </tr>
+  <br>
+  <tr align="center">
+    <td>
+      <img src="images/torus_l4.png" align="middle" width="400px"/>
+      <figcaption>Torus After 4 Loop Subivision</figcaption>
+    </td>
+    <td>
+      <img src="images/torus_l4_another_angle.png" align="middle" width="400px"/>
+      <figcaption>Torus After 4 Loop Subivision in Another Angle</figcaption>
+    </td>
+  </tr>
+  <br>
+</table>
+<br>
+<table style="width:100%">
+  <tr align="center">
+    <td>
+      <img src="images/cube.png" align="middle" width="400px"/>
+      <figcaption>Cube Original Image</figcaption>
+    </td>
+    <td>
+      <img src="images/cube_l1.png" align="middle" width="400px"/>
+      <figcaption>Cube After 1 Loop Subivision</figcaption>
+    </td>
+  </tr>
+  <br>
+  <tr align="center">
+    <td>
+      <img src="images/cube_l2.png" align="middle" width="400px"/>
+      <figcaption>Cube After 2 Loop Subivision</figcaption>
+    </td>
+    <td>
+      <img src="images/cube_l3.png" align="middle" width="400px"/>
+      <figcaption>Cube After 3 Loop Subivision</figcaption>
+    </td>
+  </tr>
+  <br>
+  <tr align="center">
+    <td>
+      <img src="images/cube_l4.png" align="middle" width="400px"/>
+      <figcaption>Cube After 4 Loop Subivision</figcaption>
+    </td>
+    <td>
+      <img src="images/cube_l4_another_angle.png" align="middle" width="400px"/>
+      <figcaption>Cube After 4 Loop Subivision in Another Angle</figcaption>
+    </td>
+  </tr>
+  <br>
+</table>
+<br>
+<p>
+  As you can see from the images above, during the subdivisions, the upsampling causes 
+  sharp edges and corners to smoothen out. As we make more subdivisions, we see a more 
+  smoother surface. However, differente shapes have different outcomes. Since the cube has 
+  more sharp edges and corners, we see it becomes more asymmetric after repeated subdivisions. 
+</p>
+<p>
+  To get the cube to subdivide symmetrically, we’d have to preprocess by splitting the diagonal edges across all the faces of the cube and then start to apply loop subdivision.
+  Here is whet the cube looks like when preprocessed and the subdivided:  
+</p>
+<br>
+<table style="width:100%">
+  <tr align="center">
+    <td>
+      <img src="images/cube_preprocessed.png" align="middle" width="400px"/>
+      <figcaption>Cube Preprocessed Original Image</figcaption>
+    </td>
+    <td>
+      <img src="images/cube_preprocessed_l1.png" align="middle" width="400px"/>
+      <figcaption>Cube Preprocessed After 1 Loop Subivision</figcaption>
+    </td>
+  </tr>
+  <br>
+  <tr align="center">
+    <td>
+      <img src="images/cube_preprocessed_l2.png" align="middle" width="400px"/>
+      <figcaption>Cube Preprocessed After 2 Loop Subivision</figcaption>
+    </td>
+    <td>
+      <img src="images/cube_preprocessed_l3.png" align="middle" width="400px"/>
+      <figcaption>Cube Preprocessed After 3 Loop Subivision</figcaption>
+    </td>
+  </tr>
+  <br>
+  <tr align="center">
+    <td>
+      <img src="images/cube_preprocessed_l4.png" align="middle" width="400px"/>
+      <figcaption>Cube Preprocessed After 4 Loop Subivision</figcaption>
+    </td>
+    <td>
+      <img src="images/cube_preprocessed_l4_blw.png" align="middle" width="400px"/>
+      <figcaption>Cube Preprocessed After 4 Loop Subivision in Black & White</figcaption>
+    </td>
+  </tr>
+  <br>
+</table>
+<br>
+
+</body>
 </html>
