@@ -55,6 +55,9 @@
       </tr>
   </table>
 </div>
+<h2 align="middle">Overview</h2>
+<p>In this project we used path tracing algorithm to generate realistic pictures. We start the project by gerenating rays and testing if they intersect with triangles and spheres. Then, we implemented Bounding Volume Hierarchy (BVH) to accelerate our path tracer. Once we started to render images much faster, we implemented direct illumination hich allowed us to render direct lighting effects such as area light shadows. Next, we implemented global illumination to also render indirect illumination. Finally, we implemented adaptive sampling to decrease the noise in our images.
+  </p>
 
 <h2 align="middle">Part 1: Ray Generation and Scene Intersection (20 Points)</h2>
 <!-- Walk through the ray generation and primitive intersection parts of the rendering pipeline.
@@ -228,15 +231,8 @@ Compare rendering times on a few scenes with moderately complex geometries with 
   hard time implementing BVH using the primitive pointers. Everytime I ran my code I 
   would get a bad access error. I debugged my code by changing the max number of leaves to half
   of the primitives size and saw that my work would work. Then, I tried to 
-  divide it into 1/3 and this is what I got:
-</p>
-<div align="middle">
-  <td>
-    <img src="" align="middle" width="400px"/>
-    <figcaption align="middle">Cow.dae on Broken BVH</figcaption>
-  </td>
-</div>
-<p>Then, I realized that my problem was that I forgot to allocate new memory everytime I created the 
+  divide it into 1/3 and I saw my code was trying to render null pointer. That was when 
+  I realized that my problem was that I forgot to allocate new memory everytime I created the 
   left and right primitives children on the recurssive call.
 </p>
 <br>
@@ -466,8 +462,38 @@ You will probably want to use the instructional machines for the above renders i
   Walk through your implementation of the indirect lighting function.
 </h3>
 <p>
-    YOUR RESPONSE GOES HERE
+  For this section of the project, we will implement indirect lighting to 
+  have even more visual richness in our rendering. This is because, indirect lighting will 
+  account for how much light was bounced from an object. Once indirect lighting is complete
+  our renderizations will have global illumination.
 </p>
+<p> We followed this pseudocode for our at_least_one_bounce_radiance function:</p>
+<div align="middle">
+  <td>
+    <img src="images/part4.png" align="middle" width="400px"/>
+    <figcaption align="middle">Source:<a href="​​https://cs184.eecs.berkeley.edu/sp22/lecture/13-97/global-illumination-and-path-tra">here</a></figcaption>
+  </td>
+</div>
+<p> We call our recurssive function at_least_one_bounce_radiance in est_radiance_global_illumination,
+  where we return the global illumination(zero_bounce_radiance+at_least_one_bounce_radiance) if ray depth is not equal to zero.
+</p>
+<ol>
+  <li>Save one_bounce_radiance into our L_out
+    to guarantee at least the direct illumination will be returned.</li>
+    <li>Check if Ray r max_depth <= 1. If it is, we return L_out. If not, we continue with the following steps. </li>
+    <li> Set cpdf to 0.8</li>
+    <li> Call sample_f to set wi and pdf. Save value returned by sample_f in imp_sampling.</li>
+    <li>Create a new ray p with the hit_p and the point and o2w*wi as the direction.</li>
+    <li>Set p's depth to r's depth -1.</li>
+    <li>Set p's mint_t to EPS_F to avoid numerical precission issues.</li>
+    <li> Create a new intersection.</li>
+    <li>Get a random value by coin flip probability and check if it is less than cpdf. If it is:
+      <ol><li>Check if new ray and new intersections intersect. If it does, sum the Recursive estimate of indirect illumination
+        shown in the above pseudocode image to L_out. </li></ol>
+    </li>
+    <li>Return L_out.</li>
+</ol>
+<p> Note: The value for the cpdf was chosen by trial and error.</p>
 <br>
 
 <h3>
@@ -482,8 +508,8 @@ You will probably want to use the instructional machines for the above renders i
         <figcaption>CBbunny.dae</figcaption>
       </td>
       <td>
-        <img src="images/your_file.png" align="middle" width="400px"/>
-        <figcaption>example2.dae</figcaption>
+        <img src="images/banana_1024.png" align="middle" width="400px"/>
+        <figcaption>banana.dae</figcaption>
       </td>
     </tr>
   </table>
@@ -499,18 +525,21 @@ You will probably want to use the instructional machines for the above renders i
     <tr align="center">
       <td>
         <img src="images/spheres_direct_s1024_l4_m5.png" align="middle" width="400px"/>
-        <figcaption>Only direct illumination (example1.dae)</figcaption>
+        <figcaption>Only direct illumination (CBspheres_lambertian.dae)</figcaption>
       </td>
       <td>
         <img src="images/spheres_indirect_s1024_l4_m5.png" align="middle" width="400px"/>
-        <figcaption>Only indirect illumination (example1.dae)</figcaption>
+        <figcaption>Only indirect illumination (CBspheres_lambertian.dae)</figcaption>
       </td>
     </tr>
   </table>
 </div>
 <br>
 <p>
-    YOUR EXPLANATION GOES HERE
+    On the image with direct lighting, we can see that the surface of the objects is 
+    really bright where the light hits it. (i.e. The middle of the walls, top of the sphere). 
+    On the other hand, the image with indirect light see that the objects are also bouncing light.
+    (i.e. The spheres have shades of red and blue from the walls.)
 </p>
 <br>
 
@@ -550,7 +579,8 @@ You will probably want to use the instructional machines for the above renders i
 </div>
 <br>
 <p>
-    YOUR EXPLANATION GOES HERE
+    The biggest difference is between depth zero and one since we will return zero_bounce_radiance + at_least_one_bounce_radiance
+     if max_ray_depth > 0. Otherwise, we will return just the zero_bounce_radiance.
 </p>
 <br>
 
@@ -563,44 +593,47 @@ You will probably want to use the instructional machines for the above renders i
     <tr align="center">
       <td>
         <img src="images/spheres_s1_l4_m5.png" align="middle" width="400px"/>
-        <figcaption>1 sample per pixel (example1.dae)</figcaption>
+        <figcaption>1 sample per pixel (CBspheres_lambertian.dae)</figcaption>
       </td>
       <td>
         <img src="images/spheres_s2_l4_m5.png" align="middle" width="400px"/>
-        <figcaption>2 samples per pixel (example1.dae)</figcaption>
+        <figcaption>2 samples per pixel (CBspheres_lambertian.dae)</figcaption>
       </td>
     </tr>
     <tr align="center">
       <td>
         <img src="images/spheres_s4_l4_m5.png" align="middle" width="400px"/>
-        <figcaption>4 samples per pixel (example1.dae)</figcaption>
+        <figcaption>4 samples per pixel (CBspheres_lambertian.dae)</figcaption>
       </td>
       <td>
         <img src="images/spheres_s8_l4_m5.png" align="middle" width="400px"/>
-        <figcaption>8 samples per pixel (example1.dae)</figcaption>
+        <figcaption>8 samples per pixel (CBspheres_lambertian.dae)</figcaption>
       </td>
     </tr>
     <tr align="center">
       <td>
         <img src="images/spheres_s16_l4_m5.png" align="middle" width="400px"/>
-        <figcaption>16 samples per pixel (example1.dae)</figcaption>
+        <figcaption>16 samples per pixel (CBspheres_lambertian.dae)</figcaption>
       </td>
       <td>
         <img src="images/spheres_s64_l4_m5.png" align="middle" width="400px"/>
-        <figcaption>64 samples per pixel (example1.dae)</figcaption>
+        <figcaption>64 samples per pixel (CBspheres_lambertian.dae)</figcaption>
       </td>
     </tr>
     <tr align="center">
       <td>
         <img src="images/spheres_s1024_l4_m5.png" align="middle" width="400px"/>
-        <figcaption>1024 samples per pixel (example1.dae)</figcaption>
+        <figcaption>1024 samples per pixel (CBspheres_lambertian.dae)</figcaption>
       </td>
     </tr>
   </table>
 </div>
 <br>
 <p>
-    YOUR EXPLANATION GOES HERE
+    Global Illumination is really good at portraying the color reflections of the objects on other objects
+    but it can be very noisy if rendered with a small number of samples per pixel.
+    We can see the color of the walls on the spheres from the first renderization even with all the noise.
+    But our renderization only appears without noise when we use 1024 samples per pixel.
 </p>
 <br>
 
@@ -613,7 +646,9 @@ Pick one scene and render it with at least 2048 samples per pixel. Show a good s
   Explain adaptive sampling. Walk through your implementation of the adaptive sampling.
 </h3>
 <p>
-    YOUR RESPONSE GOES HERE
+    Adaptive sampling is a method that looks to eliminate large numbers of noise, a common issue with the Monte Carlo path tracing method. With adaptive sampling, we can concentrate a greater number of sampling in parts of an image that converge slower and require lot more sampling to get rid of noise. Adaptive sampling’s main objective is to change the sample rate based on how quickly a pixel will converge.
+</p>
+<p>To implement adaptive sampling, we updated the raytrace_pixel method by adding a simple if condition in our already existent for loop. We checked if the current sample is divisible by sample per batch rate, and if so, we take the mean and standard deviation. We then calculate 1.96 * square root of the standard deviation divided by the current sample number, and check if it’s less than the max tolerance multiplied by the mean. If yes, this means it has converged. We break out of the function, update the sample buffer and sample count buffer with the current sample count. We added our sigma updates in the ending of the for loop, where we used the illuminance parameter of our result vector.
 </p>
 <br>
 
@@ -625,22 +660,22 @@ Pick one scene and render it with at least 2048 samples per pixel. Show a good s
   <table style="width:100%">
     <tr align="center">
       <td>
-        <img src="images/your_file.png" align="middle" width="400px"/>
-        <figcaption>Rendered image (example1.dae)</figcaption>
+        <img src="images/banana_part5_normal.png" align="middle" width="400px"/>
+        <figcaption>Rendered image (banana.dae)</figcaption>
       </td>
       <td>
-        <img src="images/your_file.png" align="middle" width="400px"/>
-        <figcaption>Sample rate image (example1.dae)</figcaption>
+        <img src="images/banana_2048_adaptative.png" align="middle" width="400px"/>
+        <figcaption>Sample rate image (banana.dae)</figcaption>
       </td>
     </tr>
     <tr align="center">
       <td>
-        <img src="images/your_file.png" align="middle" width="400px"/>
-        <figcaption>Rendered image (example2.dae)</figcaption>
+        <img src="images/.png" align="middle" width="400px"/>
+        <figcaption>Rendered image (banana.dae)</figcaption>
       </td>
       <td>
         <img src="images/your_file.png" align="middle" width="400px"/>
-        <figcaption>Sample rate image (example2.dae)</figcaption>
+        <figcaption>Sample rate image (CBbunny.dae)</figcaption>
       </td>
     </tr>
   </table>
