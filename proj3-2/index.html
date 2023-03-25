@@ -1,7 +1,189 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Project 3-2 here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>  
+    div.padded {  
+      padding-top: 0px;  
+      padding-right: 100px;  
+      padding-bottom: 0.25in;  
+      padding-left: 100px;  
+    }  
+  </style> 
+<title>Your Name  |  CS 184</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="style.css" media="screen" />
+</head>
+<body>
+<br />
+<h1 align="middle">Assignment 3-2: Additional Features to PathTracer</h1>
+    <h2 align="middle">Camila Picanco Mesquita & Rishi Arjun</h2>
+
+    <div class="padded">
+
+        <h3 align="middle">Part 1. Mirror and Glass Materials</h3>
+        <div align="middle">
+            <td>
+                <img src="images/spheres_m_0.png" align="middle" width="400px"/>
+                <figcaption>M = 0</figcaption>
+            </td>
+            <p>The image above only shows the light source because it has zero bounce. </p> 
+          </div>
+          <div align="middle">
+            <td>
+                <img src="images/spheres_m_1.png" align="middle" width="400px"/>
+                <figcaption>M = 1</figcaption>
+              </td>
+              <p>The image above has one bounce. Now we can see the walls, floor and spheres shadows because
+                of direct illumination. We can also see the reflection of the light on top of the two spheres
+                after one bounce but this reflection is not the same on both spheres. This is because the sphere 
+                on the right is also refractive and some of the rays enter the sphere, which leaves the light reflection on it 
+                a little spotty. 
+                 </p>
+          </div>
+          <div align="middle">
+            <td>
+                <img src="images/spheres_m_2.png" align="middle" width="400px"/>
+                <figcaption>M = 2</figcaption>
+              </td>
+              <p>The image above has two bounces. We can see the reflection of what the M=1 looked like inside the right and left sphere. But, 
+                since the right sphere is also refractive, we only see the reflection of the rays that have not entered the sphere. This is why it is mostly black. </p>
+          </div>
+          <div align="middle">
+            <td>
+                <img src="images/spheres_m_3.png" align="middle" width="400px"/>
+                <figcaption>M = 3</figcaption>
+              </td>
+              <p>The image above has three bounces. We continue to see the same pattern for the left sphere, which reflects what
+                M=2 looked like. But now the right sphere has changed, we can see that with three bounces the right sphere
+                apperas to be glass. The rays enter the sphere, exit the sphere and bounce light off the floor. 
+                We see the light refracted on the floor and the right blue wall on the left side of the sphere.</p>
+          </div>
+          <div align="middle">
+            <td>
+                <img src="images/spheres_m_4.png" align="middle" width="400px"/>
+                <figcaption>M = 4</figcaption>
+              </td>
+              <p>The image above has four bounces. The left sphere now show M=3, which includes the light bouncing off the floor.
+                This light enters the right sphere and is refracted to the right wall.
+              </p>
+          </div>
+          <div align="middle">
+            <td>
+                <img src="images/spheres_m_5.png" align="middle" width="400px"/>
+                <figcaption>M = 5</figcaption>
+              </td>
+              <p>The above image has five bounces. The right side of the image appears to be the same has M=4. But the left 
+                sphere is also reflecting the new light that appeared on the right wall when M=4. You can see a white dot in the 
+            middle of the right sphere's reflection on the left sphere.</p>
+          </div>
+        <div align="middle">
+            <td>
+                <img src="images/spheres_m_100.png" align="middle" width="400px"/>
+                <figcaption>M = 100</figcaption>
+              </td>
+              <p>The above image has 100 bounces. Other than a little more light spots on top of the right sphere, there is not much of a difference between this and the prevous image.
+                Thus, the light reflections and refractions have converged.
+              </p>
+        </div>
+        <br>
+
+        <h3 align="middle">Part 3. Environment Light</h3>
+        <p> In the real world, when we take a picture of an object inside a church full of windows vs. inside a windowless dark room with a ceiling light, 
+            we notice there is a difference in how lights are reflected by the object. This is because the object is receiving different types of light sources on 
+            these different environments. Inside the church, the object would be receiving an infinite environment light, which is a light that provides radiance 
+            to all directions of the object from an "infinitely far away" position. On the other hand, in the windowless dark room, the object would be receiving 
+            only direct lighting.</p>
+        <p> In this section of the project, we want to be able to render images with a realistic environment light as its light source. To do this we first choose
+            a texture map to determine the intesity of the incoming light from each direction. Then, we sample from it using uniform sampling or importance sampling. </p>
+        <p>We chose the grace.exr to be the environment map for our renderizations.</p>
+    
+        <div align="middle">
+            <table style="width:100%">
+              <tr align="center">
+                <td>
+                  <img src="images/grace.jpg"" align="middle" width="400px"/>
+                  <figcaption>Grace Church</figcaption>
+                </td>
+              </tr>
+            </table>
+        </div>
+        <div align="middle">
+            <table style="width:100%">
+              <tr align="center">
+                <td>
+                  <img src="images/probability_debug_grace.png"" align="middle" width="400px"/>
+                  <figcaption>Probability Debug Output After Renderization</figcaption>
+                </td>
+              </tr>
+            </table>
+        </div>
+        <br>
+        <div align="middle">
+            <table style="width:100%">
+              <tr align="center">
+                <td>
+                  <img src="images/bunny_uniform_grace.png" align="middle" width="400px"/>
+                  <figcaption>Uniform Sampling bunny_unlit.dae</figcaption>
+                </td>
+                <td>
+                  <img src="images/bunny_importance_grace.png" align="middle" width="400px"/>
+                  <figcaption>Importance Sampling bunny_unlit.dae</figcaption>
+                </td>
+              </tr>
+            </table>
+        </div>
+        <br>
+        <div align="middle">
+            <table style="width:100%">
+              <tr align="center">
+                <td>
+                  <img src="images/maxplanck_uniform_grace.png" align="middle" width="400px"/>
+                  <figcaption>Uniform Sampling maxplanck.dae</figcaption>
+                </td>
+                <td>
+                  <img src="images/maxplanck_importance_grace.png" align="middle" width="400px"/>
+                  <figcaption>Importance Sampling maxplanck.dae</figcaption>
+                </td>
+              </tr>
+            </table>
+        </div>
+        <br>
+        <p> For the bunny_unlit.dae and maxplanck.dae images above, we used 4 samples per pixel and 64 samples per light in each.
+            The images on the left were rendered using uniform sampling and the images on the right were rendered using importance sampling.
+            For both renderizations, we noticed that using uniform sampling results in a longer time for renderization and an image with 
+            higher noise than importance sampling. This is because importance sampling converges faster than uniform since it samples around
+            the light instead of the entire range.
+        </p>
+        <h5> Examples of the bunny_unlit.dae with different environment map</h5>
+        <div align="middle">
+            <table style="width:100%">
+              <tr align="center">
+                <td>
+                    <img src="images/bunny_uniform_ennis.png" align="middle" width="400px"/>
+                    <figcaption>Uniform Sampling with ennis.exr</figcaption>
+                  </td>
+                  <td>
+                    <img src="images/bunny_importance_ennis.png" align="middle" width="400px"/>
+                    <figcaption>Importance Sampling with ennis.exr</figcaption>
+                  </td>
+              </tr>
+            </table>
+        </div>
+        <div align="middle">
+            <table style="width:100%">
+              <tr align="center">
+                <td>
+                  <img src="images/bunny_uniform_field.png" align="middle" width="400px"/>
+                  <figcaption>Uniform Sampling with field.exr</figcaption>
+                </td>
+                <td>
+                  <img src="images/bunny_importance_field.png" align="middle" width="400px"/>
+                  <figcaption>Importance Sampling with field.exr</figcaption>
+                </td>
+              </tr>
+            </table>
+        </div>
+    </div>
+</body>
 </html>
+
