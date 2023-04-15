@@ -1,7 +1,387 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Project 4 here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+</style>
+<title>CS 184 Mesh Editor</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+<h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2023</h1>
+<h1 align="middle">Project 4: Cloth Simulator</h1>
+<h2 align="middle">Camila Picanco Mesquita & Rishi Arjun</h2>
+
+<br><br>
+
+<div>
+
+<h2 align="middle">Overview</h2>
+<p>In this project, we implemented a real-time simulation of cloth using a mass and spring based system. Our implementation supports collisions with sphere, planes and with the cloth itself. In addition, our implementation created a shader progam that only uses up 
+OpenGL 3.3.
+</p>
+<p>The process of completing this project was rewarding but also time consuming. My partner and I spent a lot of time debugging our code at each task. Most of our problems happened because of pointers.</p>
+<h2 align="middle">Part I: Masses and springs</h2>
+<p>For this section of the project, we created a grid of evenly spaces point masses and connected them to the closest masses with springs. 
+  For each spring, we assign constraints between the point masses depending on their position to each other. Here are the three types of constraints applied to springs:
+</p>
+<ol>
+  <li> Structural constraint: A constraint between a point mass and the point mass to its left as well as the point mass above it. </li>
+  <li> Shearing constraint: A constraint between a point mass and the point mass to its diagonal upper left as well as the point mass to its diagonal upper right. </li>
+  <li> Bending constraint: A constraint between a point mass and the point mass two away to its left as well as the point mass two above it.</li>
+</ol>
+<p> Once we were done implementing this section, we were able to run simulations of our cloth grid with all three constraints, with only our shearing constraint and without
+  any shearing constraints. Here are some images of what our cloth wire looked like depending on the constraints applied:
+</p>
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="images/nothing_selected.png" align="middle" width="400px"/>
+        <figcaption align="middle">All Three Constraints Applied </figcaption>
+      </td>
+      <td>
+        <img src="images/wire_grid_zoom.png" align="middle" width="400px"/>
+        <figcaption>All Three Constraints Applied - Zoomed In</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+<br>
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="images/only_shearing_selected.png" align="middle" width="400px"/>
+        <figcaption align="middle">Only Shearing Applied </figcaption>
+      </td>
+      <td>
+        <img src="images/only_shearing_selected_grid_zoom.png" align="middle" width="400px"/>
+        <figcaption>Only Shearing Applied - Zoomed In</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+<br>
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="images/no_shearing_selected.png" align="middle" width="400px"/>
+        <figcaption align="middle">No Shearing Applied </figcaption>
+      </td>
+      <td>
+        <img src="images/no_shearing_selected_grid_zoom.png" align="middle" width="400px"/>
+        <figcaption>No Shearing Applied - Zoomed In</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+<br>
+
+<h2 align="middle">Part II: Simulation Via Numerical Integration</h2>
+<p>For this section, we implemented physical equations of motion to apply total force acting on each point mass.
+  Then, we implemented the Verlet integration to compute new point mass positions if the point mass was not pinned.
+  Finally, we implemented position contrani updates to keep springs from being unresonably deformed.
+</p>
+<p>Once our implementation was done, we were able to experiment with some parameters in the simulation. 
+  All of images and GIF's below were created using 60 frams/s. </p>
+  <p>Here are some photos and GIF's of the cloth with ks parameters modified:
+</p>
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="images/KS_5.png" align="middle" height = "300px"/>
+        <figcaption align="middle">ks = 5 N/m </figcaption>
+      </td>
+      <td>
+        <img src="images/original_ks_5000.png" align="middle" height = "300px"/>
+        <figcaption>Original ks = 5000 N/m</figcaption>
+      </td>
+      <td>
+        <img src="images/ks_50000.png" align="middle" height = "300px"/>
+        <figcaption>ks = 50000 N/m</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+<br>
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="images/ks_5.gif" align="middle" width="400px"/>
+        <figcaption align="middle">ks = 5 N/m</figcaption>
+      </td>
+      <td>
+        <img src="images/ks_50000.gif" align="middle" width="400px"/>
+        <figcaption>ks = 50000 N/m</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+<p>The images and GIF above show that the cloth is less stiff when the spring constant (ks) is very low. When released, we see more movement on it and notice that it takes longer to reach a resting position. On the other hand, when the ks is very high, the cloth becomes stiffer. As a result, we see fewer folds on the top part of the cloth and less movement. In addition, we notice it reaches a resting position very quickly.</p>
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="images/den_1.png" align="middle" height = "300px"/>
+        <figcaption align="middle">Density = 1 g/cmˆ2</figcaption>
+      </td>
+      <td>
+        <img src="images/den_15.png" align="middle" height = "300px"/>
+        <figcaption>Original Density = 15 g/cmˆ2</figcaption>
+      </td>
+      <td>
+        <img src="images/den_50.png" align="middle" height = "300px"/>
+        <figcaption>Density = 50 g/cmˆ2</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+<br>
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="images/den_1.gif" align="middle" width="400px"/>
+        <figcaption align="middle">Density = 1 g/cmˆ2</figcaption>
+      </td>
+      <td>
+        <img src="images/den_50.gif" align="middle" width="400px"/>
+        <figcaption>Density = 50 g/cmˆ2</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+<p>Decreasing the density increases the gravitational force, while increasing the density decreases it. This relation appears in the images above. When the density is very low, the top of the cloth is almost straight. But, when the density is very high, the cloth hangs loosely from the top.</p>
+<p>The GIF shows that density does not affect how quickly the cloth will reach a stop.
+</p>
+  <div align="middle">
+    <table style="width:100%">
+      <tr align="center">
+        <td>
+          <img src="images/damp_0.0.png" align="middle" height = "300px"/>
+          <figcaption align="middle">Damping = 0.0%</figcaption>
+        </td>
+        <td>
+          <img src="images/damp_0.2.png" align="middle" height = "300px"/>
+          <figcaption>Original Damping = 0.2%</figcaption>
+        </td>
+        <td>
+          <img src="images/damp_1.png" align="middle" height = "300px"/>
+          <figcaption>Damping = 1.0%</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <br>
+  <div align="middle">
+    <table style="width:100%">
+      <tr align="center">
+        <td>
+          <img src="images/damp_0.0.gif" align="middle" width="300px"/>
+          <figcaption align="middle"> Damping = 0.0%</figcaption>
+        </td>
+        <td>
+          <img src="images/damp_0.2.gif" align="middle" width = "300px"/>
+          <figcaption>Original Damping = 0.2%</figcaption>
+        </td>
+        <td>
+          <img src="images/damp_1.0.gif" align="middle" width="300px"/>
+          <figcaption>Damping = 1.0%</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <p>The images show little difference between 0.0% and 1.0% at its final resting position. 
+  </p>
+  <p>GIFs show that the percentage of damping affects the weight of the cloth. If there is no damping, the cloth is very light and will swing for a while until it reaches its final position.
+    </p>
+    <p>On the other hand, when the cloth is 1% damp, it becomes super heavy and appears to be moving in slow motion upon release.</p>
+  <div align="middle">
+    <td>
+      <img src="images/pinned4.png" align="middle" width="400px"/>
+      <figcaption align="middle">Cloth at its Final Resting Position </figcaption>
+    </td>
+  </div>
+  <br>
+  <h2>Part III: Handling collisions with other objects</h2>
+  <p>For this section, we implemented code to handle collision with spheres and planes.</p>
+  <div align="middle">
+    <table style="width:100%">
+      <tr align="center">
+        <td>
+          <img src="images/part3_500.png" align="middle" width="350px"/>
+          <figcaption align="middle">Cloth Collision with Sphere with ks = 500 N/m</figcaption>
+        </td>
+        <td>
+          <img src="images/part3_5000.png" align="middle" width="350px"/>
+          <figcaption>Cloth Collision with Sphere ks = 5000 N/m</figcaption>
+        </td>
+        <td>
+          <img src="images/part3_50000.png" align="middle" width="350px"/>
+          <figcaption>Cloth Collision with Sphere ks = 500 N/m</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <br>
+  <p>In the previous part, we noticed that the spring constant (ks) is related to the stiffness of the spring. In the above images, we can see how that changes the shape in which the cloth appears after colliding with the sphere.
+  </p>
+  <p>When ks = 500, we notice that the cloth is not stiff. Instead, it wraps around the sphere allowing us to see its shape clearly. In addition, many folds appear on the cloth.</p>
+  <p> Here is a screenshot of our cloth lying peacefully at rest on the plane.</p>
+  <p>When ks = 5000, we first notice that it has fewer folds than before and that we can see less of the shape of the sphere.</p>
+  <p>Finally, when ks = 50000, the cloth is stiffer and no longer wraps around the sphere like the previous two. Instead, it has wider folds, resulting in even fewer folds than before, and now we can only see the shape of the very top of the sphere.
+  </p>
+  <br>
+  <p> Here is a screenshot of our cloth lying peacefully at rest on the plane.</p>
+
+  <div align="middle">
+    <td>
+      <img src="images/cloth_plane.png" align="middle" width="400px"/>
+      <figcaption align="middle">Cloth on the Plane </figcaption>
+    </td>
+  </div>
+  <br>
+  <h2>Part IV: Handling self-collisions</h2>
+  <p> For this section, we implemented spatial hashing to handle cases when the cloth will collide with itself. Here are screenshots of self-collision at 200 frames per second:</p>
+  <div align="middle">
+    <table style="width:100%">
+      <tr align="center">
+        <td>
+          <img src="images/part4_initial.png" align="middle" width="350px"/>
+          <figcaption align="middle">Beginnig of Self-collision</figcaption>
+        </td>
+        <td>
+          <img src="images/part4_middle.png" align="middle" width="350px"/>
+          <figcaption>Middle of Self-collision</figcaption>
+        </td>
+        <td>
+          <img src="images/part4_end.png" align="middle" width="350px"/>
+          <figcaption>End of Self-collision</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <br>
+  <p> The next GIFs show how the slef-collision behaves when we modify the density and ks at 45 frames/second.</p>
+  <div align="middle">
+    <table style="width:100%">
+      <tr align="center">
+        <td>
+          <img src="images/d_1_ks5000.gif" align="middle" height = "250px"/>
+          <figcaption align="middle"> Density = 1 g/cmˆ2, ks = 5000 N/m</figcaption>
+        </td>
+        <td>
+          <img src="images/d_15_ks5000.gif" align="middle" height = "250px"/>
+          <figcaption>Original - Density = 15 g/cmˆ2, ks = 5000 N/m</figcaption>
+        </td>
+        <td>
+          <img src="images/d_50_ks_5000.gif" align="middle" height = "250px"/>
+          <figcaption>Density = 50 g/cmˆ2, ks = 5000 N/m</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <br>
+  <p>The above GIFs show how the cloth behaves when changing its density to 1 g/cm^2, 15 g/cm^2, and 50 g/cm^2. The cloth folds in all directions and reaches the plane faster when the density is lower. This is because the lower the density, the higher the gravitational force. Thus, the cloth will collide with itself much faster, and the top part of it will start folding as soon as it is released.</p>
+  <br>
+  <div align="middle">
+    <table style="width:100%">
+      <tr align="center">
+        <td>
+          <img src="images/d_15_ks1.gif" align="middle" height = "250px"/>
+          <figcaption align="middle"> ks = 500 N/m, Density = 15 g/cmˆ2,</figcaption>
+        </td>
+        <td>
+          <img src="images/d_15_ks5000.gif" align="middle" height = "250px"/>
+          <figcaption>Original - ks = 5000 N/m, Density = 15 g/cmˆ2,</figcaption>
+        </td>
+        <td>
+          <img src="images/d_15_ks_50000.gif" align="middle" height = "250px"/>
+          <figcaption>ks = 50000 N/m, Density = 15 g/cmˆ2,</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <br>
+  <p>The above GIFs show how the cloth behaves when changing its ks to 500, 5000, and 50000. The cloth has wider folds when the ks is higher. This is because when the ks is high, the cloth becomes stiffer. As a result, it is less prone to fold on itself immediately as it reaches the plane. Instead, it will move forward and backward, spreading itself more on the plane.</p>
+  <br>
+  <h2>Part V: Shaders</h2>
+  <p>For this section of the project, we implemented a shader program that gives our cloth a more realistic appearance and speeds up the graphics pipeline. A shader program runs in parallel on GPU. It links a vertex and a fragment shader and outputs a single 4-dimensional vector representing the final color. This final color is considered more realistic because shaders take into account lighting and would cast shadows if necessary.</p>
+  <p>The shading model we implemented in this section was the Blinn-Phong model. Which is a model based on local illumination that reflects light using a combination of ambient lighting, diffuse lighting, and specular lighting. Here are screenshots of it applying each individual light as well as one using the entire Blinn-Phong model:</p>
+  <div align="middle">
+    <table style="width:100%">
+      <tr align="center">
+        <td>
+          <img src="images/phong_ambient.png" align="middle" width="400px"/>
+          <figcaption> Ambient Light Only</figcaption>
+        </td>
+        <td>
+          <img src="images/phong_diffuse.png" align="middle" width="400px"/>
+          <figcaption>Diffuse Light Only</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <br>
+  <div align="middle">
+    <table style="width:100%">
+      <tr align="center">
+        <td>
+          <img src="images/phong_specular.png" align="middle" width="400px"/>
+          <figcaption>Specular Light Only</figcaption>
+        </td>
+        <td>
+          <img src="images/phong_all.png" align="middle" width="400px"/>
+          <figcaption>Ambient + Diffuse + Specular</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <br>
+  <p>Here are a screenshots of our custom texture:</p>
+  <div align="middle">
+    <table style="width:100%">
+      <tr align="center">
+        <td>
+          <img src="images/berkeley_texture.png" align="middle" width="400px"/>
+        </td>
+        <td>
+          <img src="images/checkers.png" align="middle" width="400px"/>
+        </td>
+      </tr>
+    </table>
+    <table style="width:100%">
+      <tr align="center">
+        <td>
+          <img src="images/butterfly_4pinned.png" align="middle" width="400px"/>
+        </td>
+        <td>
+          <img src="images/butterfly.png" align="middle" width="400px"/>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <br>
+  <p></p>
+
+</body>
 </html>
