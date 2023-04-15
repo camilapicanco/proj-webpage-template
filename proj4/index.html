@@ -357,7 +357,7 @@ OpenGL 3.3.
     </table>
   </div>
   <br>
-  <p>Here are a screenshots of our custom texture:</p>
+  <p>Here are screenshots of our custom texture:</p>
   <div align="middle">
     <table style="width:100%">
       <tr align="center">
@@ -381,7 +381,78 @@ OpenGL 3.3.
     </table>
   </div>
   <br>
-  <p></p>
+  <p> Here are screenshot of bump mapping on the cloth and on the sphere using texture_3:</p>
+  <div align="middle">
+    <table style="width:100%">
+      <tr align="center">
+        <td>
+          <img src="images/bump_cloth_part5.png" align="middle" width="400px"/>
+        </td>
+        <td>
+          <img src="images/bump_part5.png" align="middle" height = "300px" width="400px"/>
+        </td>
+        <td>
+          <img src="images/bump_cloth_sphere_part5.png" align="middle" width="400px"/>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <br>
+  <p> Here are screenshot of displacement mapping on the sphere using texture_3:</p>
+  <div align="middle">
+    <td>
+      <img src="images/displacement.png" align="middle" width="400px"/>
+    </td>
+  </div>
+  <br>
+  <p>In bump mapping, we map the texture to the object's surface. There is no change to the object's shape since we change the normal vectors to give an illusion of details on the form. On the other hand, displacement mapping changes the shape of the object. This is because displacement mapping applies bump mapping and alters the object's vertices' positions to match the texture.</p>
+  <p>The screenshots below show texture_3 applied to the sphere using both bump mapping and displacement mapping at 16x16 resolution and 128x128 resolution. At the 16x16 resolution, the sphere seems to have a couple of straight lines around it, while the 128x128 resolution looks more rounded. In addition, the higher-resolution screenshot has a much better displacement mapping as more vertices are altered to match the different heights of the texture.</p>
+  <div align="middle">
+    <table style="width:100%">
+      <tr align="center">
+        <td>
+          <img src="images/bum_16_16.png" align="middle" width="400px"/>
+          <figcaption>Bump Mapping 16x16</figcaption>
+        </td>
+        <td>
+          <img src="images/displacement_16_16.png" align="middle" width="400px"/>
+          <figcaption>Displacement Mapping 16x16</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <br>
+
+  <div align="middle">
+    <table style="width:100%">
+      <tr align="center">
+        <td>
+          <img src="images/bump_128_128.png" align="middle" width="400px"/>
+          <figcaption>Bump Mapping 128x128</figcaption>
+        </td>
+        <td>
+          <img src="images/displacement_128_128.png" align="middle" width="400px"/>
+          <figcaption>Displacement Mapping 128x128</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <br>
+
+  <p>Here are screenshots of our mirror shader on the cloth and on the sphere:</p>
+  <div align="middle">
+    <table style="width:100%">
+      <tr align="center">
+        <td>
+          <img src="images/mirror_cloth.png" align="middle" width="400px"/>
+        </td>
+        <td>
+          <img src="images/mirror_sphere.png" align="middle" width="400px"/>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <br>
 
 </body>
 </html>
